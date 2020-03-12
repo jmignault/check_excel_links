@@ -7,6 +7,8 @@ from os.path import splitext
 # setup and variables
 # use an offset to skip header row
 offset = 2
+# print progress after this many rows
+rows_done = 50
 
 # column numbers for URL, status code, and content type.
 url_col = 2
@@ -17,7 +19,7 @@ content_type_col = 6
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
 else:
-    print("This script requires the name of the Excel XLSX file to be processed.")
+    print("Script requires the Excel XLSX filename to be processed.")
     exit(1)
 
 # create the output filename based on the passed in filename
@@ -41,7 +43,7 @@ padding = len(str(sheet.max_row))
 # Loop through the rows
 for index, row in enumerate(sheet.iter_rows(min_row=offset)):
     # Every hundred rows, print total rows processed and percentage done.
-    if index > 1 and index % 100 == 0:
+    if index > 1 and index % rows_done == 0:
         print(f"{index:{padding}} rows processed.", end=' ')
         print("({(index*100)/sheet.max_row:.0f}%)")
     try:
@@ -49,13 +51,16 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         # TODO: pass URL column as an argument rather than hard-code
         cv = row[url_col].value
         req = requests.head(cv, allow_redirects=True)
-        sheet.cell(row=index + offset, column=status_col).value = req.status_code
+        the_cell = sheet.cell(row=index + offset, column=status_col)
+        the_cell.value = req.status_code
         # take just the mime type, drop encoding
         content_type = req.headers['content-type'].split(';')[0]
-        sheet.cell(row=index + offset, column=content_type_col).value = content_type
+        the_cell = sheet.cell(row=index + offset, column=content_type_col)
+        the_cell.value = content_type
     # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
-        sheet.cell(row=index + offset, column=status_col).value = "No valid URL."
+        the_cell = sheet.cell(row=index + offset, column=status_col)
+        the_cell.value = "No valid URL."
         continue
 
 try:
