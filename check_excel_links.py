@@ -15,6 +15,9 @@ url_col = 2
 status_col = 5
 content_type_col = 6
 
+# keep an error count
+errors = 0
+
 # check to see if a filename was passed in; if not, print a message & exit
 if len(sys.argv) > 1:
     file_name = sys.argv[1]
@@ -61,6 +64,9 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=status_col)
         the_cell.value = "No valid URL."
+        if index > 0:
+            print(f"No valid URL for line {index}.")
+            errors += 1
         continue
 
 try:
@@ -71,4 +77,5 @@ except IOError as err:
     exit(1)
 
 # Done. print a message and exit.
-print(f"Finished. {sheet.max_row} rows processed, saved to file {outfile}.")
+print(f"Finished. {sheet.max_row} rows processed, saved to file {outfile}.", end=' ')
+print(f"{errors} errors reported({(errors * 100)/sheet.max_row: .0f}%)")
