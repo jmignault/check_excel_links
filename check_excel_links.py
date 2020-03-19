@@ -45,7 +45,7 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
     # Every hundred rows, print total rows processed and percentage done.
     if index > 1 and index % rows_done == 0:
         print(f"{index:{padding}} rows processed.", end=' ')
-        print("({(index*100)/sheet.max_row:.0f}%)")
+        print(f"({(index*100)/sheet.max_row:.0f}%)")
     try:
         # if URL, get headers: status code, mimetype
         # TODO: pass URL column as an argument rather than hard-code
