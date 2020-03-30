@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "check_excel_links"
+version = "0.1.0"
+description = "A script to check links for CJH digital objects."
+authors = ["jmignault <john.mignault@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+requests = "^2.23.0"
+openpyxl = "^3.0.3"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
