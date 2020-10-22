@@ -4,3 +4,5 @@
 *.py~*~
 *.py~[0-9]~
 /check_excel_links.py.~*~
+/check_redirects.py
+/error_report.txt
