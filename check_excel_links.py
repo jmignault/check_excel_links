@@ -68,6 +68,13 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             print(f"No valid URL for line {index}.")
             errors += 1
         continue
+    except requests.exceptions.ConnectionError:
+        the_cell = sheet.cell(row=index + offset, column=status_col)
+        the_cell.value = "Connection was refused."
+        if index > 0:
+            print(f"The connection was refused to {cv}: line {index}.")
+            errors += 1
+        continue
 
 try:
     # try to save the output file
