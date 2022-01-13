@@ -56,10 +56,11 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         req = requests.head(cv, allow_redirects=True)
         the_cell = sheet.cell(row=index + offset, column=status_col)
         the_cell.value = req.status_code
-        # take just the mime type, drop encoding
-        content_type = req.headers['content-type'].split(';')[0]
-        the_cell = sheet.cell(row=index + offset, column=content_type_col)
-        the_cell.value = content_type
+        if req.headers['content-type']:
+            # take just the mime type, drop encoding
+            content_type = req.headers['content-type'].split(';')[0]
+            the_cell = sheet.cell(row=index + offset, column=content_type_col)
+            the_cell.value = content_type
     # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=status_col)
