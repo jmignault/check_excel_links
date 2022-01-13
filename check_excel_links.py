@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import argparse
 import sys
 import openpyxl
 import requests
@@ -10,35 +11,34 @@ offset = 2
 # print progress after this many rows
 rows_done = 50
 
-# column numbers for URL, status code, and content type.
-url_col = 2
-status_col = 5
-content_type_col = 6
+parser = argparse.ArgumentParser(description='Check links in an excel file.')
+parser.add_argument('--ucol', dest='url_col', default=1, type=int,
+                    help='index of column in input file containing URLs (zero-based)')
+parser.add_argument('--scol', dest='status_col', default=5, type=int,
+                    help='index of column in output file to write status codes (zero-based)')
+parser.add_argument('--ccol', dest='content_type_col', default=6, type=int,
+                    help='index of column in putput file to write content type (zero-based)')
+parser.add_argument('infile', help="Input file in Excel format")
+
+args = parser.parse_args()
 
 # keep an error count
 errors = 0
 
-# check to see if a filename was passed in; if not, print a message & exit
-if len(sys.argv) > 1:
-    file_name = sys.argv[1]
-else:
-    print("Script requires the Excel XLSX filename to be processed.")
-    exit(1)
-
 # create the output filename based on the passed in filename
-outfile = f"{splitext(file_name)[0]}_checked.xlsx"
+outfile = f"{splitext(args.infile)[0]}_checked.xlsx"
 
 # open the file and get the active sheet
-wb = openpyxl.load_workbook(filename=file_name)
+wb = openpyxl.load_workbook(filename=args.infile)
 sheet = wb.active
 
 # Progress reporting
-print(f"Processing {sheet.max_row} rows in file {file_name}.")
+print(f"Processing {sheet.max_row} rows in file {args.infile}.")
 print(f"Will save records to XSLX file {outfile}.")
 
 # Write in headers for additional columns
-sheet.cell(row=1, column=status_col).value = 'STATUS CODE'
-sheet.cell(row=1, column=content_type_col).value = 'CONTENT TYPE'
+sheet.cell(row=1, column=args.status_col).value = 'STATUS CODE'
+sheet.cell(row=1, column=args.content_type_col).value = 'CONTENT TYPE'
 
 # calculate padding for processed rows
 padding = len(str(sheet.max_row))
@@ -52,27 +52,28 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
     try:
         # if URL, get headers: status code, mimetype
         # TODO: pass URL column as an argument rather than hard-code
-        cv = row[url_col].value
+        cv = row[args.url_col].value
         req = requests.head(cv, allow_redirects=True)
-        the_cell = sheet.cell(row=index + offset, column=status_col)
+        the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = req.status_code
         try:
             # take just the mime type, drop encoding
             content_type = req.headers['content-type'].split(';')[0]
-            the_cell = sheet.cell(row=index + offset, column=content_type_col)
+            the_cell = sheet.cell(row=index + offset,
+                                  column=args.content_type_col)
             the_cell.value = content_type
         except KeyError:
             continue
     # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
-        the_cell = sheet.cell(row=index + offset, column=status_col)
+        the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = "No valid URL."
         if index > 0:
             print(f"No valid URL for line {index}.")
             errors += 1
         continue
     except requests.exceptions.ConnectionError:
-        the_cell = sheet.cell(row=index + offset, column=status_col)
+        the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = "Connection was refused."
         if index > 0:
             print(f"The connection was refused to {cv}: line {index}.")
