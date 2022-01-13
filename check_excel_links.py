@@ -26,7 +26,7 @@ else:
     exit(1)
 
 # create the output filename based on the passed in filename
-outfile = f"{splitext(file_name)[0]}_linkchecked.xlsx"
+outfile = f"{splitext(file_name)[0]}_checked.xlsx"
 
 # open the file and get the active sheet
 wb = openpyxl.load_workbook(filename=file_name)
