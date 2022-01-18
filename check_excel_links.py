@@ -26,6 +26,8 @@ args = parser.parse_args()
 
 # keep an error count
 errors = 0
+# keep a redirect count
+redirects = 0
 
 # create the output filename based on the passed in filename
 outfile = f"{splitext(args.infile)[0]}_checked.xlsx"
@@ -67,12 +69,14 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             the_cell.value = content_type
         except KeyError:
             continue
-        print(req.history)
+
         if req.history:
+            redirects += 1
             the_cell = sheet.cell(row=index + offset, column=args.location_col)
             r = requests.head(req.history[-1].url, allow_redirects=True)
             the_cell.value = r.url
-        # record if there's no URL, then continue
+            print(f"{cv} redirects to {r.url}.")
+            # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = "No valid URL."
@@ -98,3 +102,4 @@ except IOError as err:
 # Done. print a message and exit.
 print(f"Finished. {sheet.max_row} rows processed, saved to file {outfile}.", end=' ')
 print(f"{errors} errors reported({(errors * 100)/sheet.max_row: .0f}%)")
+print(f"{redirects} redirects reported({(redirects * 100)/sheet.max_row: .0f}%)")
