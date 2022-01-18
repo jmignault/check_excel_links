@@ -60,7 +60,8 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         cv = row[args.url_col].value
         req = requests.head(cv, allow_redirects=True)
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
-        the_cell.value = req.status_code
+        the_cell.value = str(req.status_code) + \
+            ('; ' + req.reason if req.reason else '')
         try:
             # take just the mime type, drop encoding
             content_type = req.headers['content-type'].split(';')[0]
@@ -72,7 +73,8 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
 
         if req.history:
             redirects += 1
-            the_cell = sheet.cell(row=index + offset, column=args.location_col)
+            the_cell = sheet.cell(row=index + offset,
+                                  column=args.location_col)
             r = requests.head(req.history[-1].url, allow_redirects=True)
             the_cell.value = r.url
             print(f"{cv} redirects to {r.url}.")
