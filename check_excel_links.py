@@ -17,7 +17,9 @@ parser.add_argument('--ucol', dest='url_col', default=1, type=int,
 parser.add_argument('--scol', dest='status_col', default=5, type=int,
                     help='index of column in output file to write status codes (zero-based)')
 parser.add_argument('--ccol', dest='content_type_col', default=6, type=int,
-                    help='index of column in putput file to write content type (zero-based)')
+                    help='index of column in output file to write content type (zero-based)')
+parser.add_argument('--lcol', dest='location_col', default=7, type=int,
+                    help='index of column in output file to write redirect location (zero-based)')
 parser.add_argument('infile', help="Input file in Excel format")
 
 args = parser.parse_args()
@@ -39,6 +41,7 @@ print(f"Will save records to XSLX file {outfile}.")
 # Write in headers for additional columns
 sheet.cell(row=1, column=args.status_col).value = 'STATUS CODE'
 sheet.cell(row=1, column=args.content_type_col).value = 'CONTENT TYPE'
+sheet.cell(row=1, column=args.location_col).value = 'LOCATION'
 
 # calculate padding for processed rows
 padding = len(str(sheet.max_row))
@@ -64,7 +67,12 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             the_cell.value = content_type
         except KeyError:
             continue
-    # record if there's no URL, then continue
+        print(req.history)
+        if req.history:
+            the_cell = sheet.cell(row=index + offset, column=args.location_col)
+            r = requests.head(req.history[-1].url, allow_redirects=True)
+            the_cell.value = r.url
+        # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = "No valid URL."
