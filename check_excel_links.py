@@ -72,12 +72,19 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             continue
 
         if req.history:
-            redirects += 1
-            the_cell = sheet.cell(row=index + offset,
-                                  column=args.location_col)
-            r = requests.get(req.history[-1].url, allow_redirects=False)
-            the_cell.value = r.headers['Location']
-            print(f"{cv} redirects to {r.headers['Location']}.")
+            try:
+                the_cell = sheet.cell(row=index + offset,
+                                      column=args.location_col)
+                r = requests.get(req.history[-1].url, allow_redirects=False)
+                if 'Location' in r.headers:
+                    fld = r.headers['Location']
+                else:
+                    fld = r.url
+                the_cell.value = fld
+                print(f"{cv} redirects to {fld}.")
+                redirects += 1
+            except KeyError:
+                continue
             # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
