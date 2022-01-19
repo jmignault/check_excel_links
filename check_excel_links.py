@@ -58,7 +58,7 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         # if URL, get headers: status code, mimetype
         # TODO: pass URL column as an argument rather than hard-code
         cv = row[args.url_col].value
-        req = requests.head(cv, allow_redirects=True)
+        req = requests.get(cv, allow_redirects=True)
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = str(req.status_code) + \
             ('; ' + req.reason if req.reason else '')
@@ -75,9 +75,9 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             redirects += 1
             the_cell = sheet.cell(row=index + offset,
                                   column=args.location_col)
-            r = requests.head(req.history[-1].url, allow_redirects=True)
-            the_cell.value = r.url
-            print(f"{cv} redirects to {r.url}.")
+            r = requests.get(req.history[-1].url, allow_redirects=False)
+            the_cell.value = r.headers['Location']
+            print(f"{cv} redirects to {r.headers['Location']}.")
             # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
