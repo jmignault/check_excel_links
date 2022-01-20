@@ -11,6 +11,7 @@ offset = 2
 # print progress after this many rows
 rows_done = 50
 
+# define arguments and parse them
 parser = argparse.ArgumentParser(description='Check links in an excel file.')
 parser.add_argument('--ucol', dest='url_col', default=1, type=int,
                     help='index of column in input file containing URLs (zero-based)')
@@ -50,7 +51,7 @@ padding = len(str(sheet.max_row))
 
 # Loop through the rows
 for index, row in enumerate(sheet.iter_rows(min_row=offset)):
-    # Every hundred rows, print total rows processed and percentage done.
+    # Every rows_done rows, print total rows processed and percentage done.
     if index > 1 and index % rows_done == 0:
         print(f"{index:{padding}} rows processed.", end=' ')
         print(f"({(index*100)/sheet.max_row:.0f}%)")
@@ -71,6 +72,7 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         except KeyError:
             continue
 
+        # check for redirect and follow if so
         if req.history:
             try:
                 the_cell = sheet.cell(row=index + offset,
@@ -85,7 +87,8 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
                 redirects += 1
             except KeyError:
                 continue
-            # record if there's no URL, then continue
+
+    # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
         the_cell = sheet.cell(row=index + offset, column=args.status_col)
         the_cell.value = "No valid URL."
