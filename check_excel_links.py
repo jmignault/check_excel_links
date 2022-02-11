@@ -77,13 +77,12 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             try:
                 the_cell = sheet.cell(row=index + offset,
                                       column=args.location_col)
-                r = requests.get(req.history[-1].url, allow_redirects=False)
-                if 'Location' in r.headers:
-                    fld = r.headers['Location']
-                else:
-                    fld = r.url
+                fld = ''
+                for rh in req.history:
+                    fld += rh.url + ';'
+                rq = requests.get(req.history[-1].url, allow_redirects=True)
+                fld += f"{rq.status_code}"
                 the_cell.value = fld
-                print(f"{cv} redirects to {fld}.")
                 redirects += 1
             except KeyError:
                 continue
