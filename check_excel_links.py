@@ -88,8 +88,8 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
                         req.history[-1].url, allow_redirects=True)
                     fld += f"{rq.status_code}"
                     the_cell.value = fld
-            except KeyError:
-                continue
+                except KeyError:
+                    continue
 
     # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
