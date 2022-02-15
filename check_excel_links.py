@@ -74,9 +74,10 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         except KeyError:
             continue
 
-        # check for redirect and follow if so
-        if args.track_redirects != 0:
-            if req.history:
+        if req.history:
+            redirects += 1
+            # check for redirect and follow if so
+            if args.track_redirects != 0:
                 try:
                     the_cell = sheet.cell(row=index + offset,
                                           column=args.location_col)
@@ -87,9 +88,8 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
                         req.history[-1].url, allow_redirects=True)
                     fld += f"{rq.status_code}"
                     the_cell.value = fld
-                    redirects += 1
-                except KeyError:
-                    continue
+            except KeyError:
+                continue
 
     # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
