@@ -21,6 +21,8 @@ parser.add_argument('--ccol', dest='content_type_col', default=6, type=int,
                     help='index of column in output file to write content type (zero-based)')
 parser.add_argument('--lcol', dest='location_col', default=7, type=int,
                     help='index of column in output file to write redirect location (zero-based)')
+parser.add_argument('--redir', dest='track_redirects', default=0, type=int,
+                    help='write redirection chain to output file')
 parser.add_argument('infile', help="Input file in Excel format")
 
 args = parser.parse_args()
@@ -73,19 +75,21 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             continue
 
         # check for redirect and follow if so
-        if req.history:
-            try:
-                the_cell = sheet.cell(row=index + offset,
-                                      column=args.location_col)
-                fld = ''
-                for rh in req.history:
-                    fld += rh.url + ';'
-                rq = requests.get(req.history[-1].url, allow_redirects=True)
-                fld += f"{rq.status_code}"
-                the_cell.value = fld
-                redirects += 1
-            except KeyError:
-                continue
+        if args.track_redirects != 0:
+            if req.history:
+                try:
+                    the_cell = sheet.cell(row=index + offset,
+                                          column=args.location_col)
+                    fld = ''
+                    for rh in req.history:
+                        fld += rh.url + ';'
+                    rq = requests.get(
+                        req.history[-1].url, allow_redirects=True)
+                    fld += f"{rq.status_code}"
+                    the_cell.value = fld
+                    redirects += 1
+                except KeyError:
+                    continue
 
     # record if there's no URL, then continue
     except requests.exceptions.MissingSchema:
