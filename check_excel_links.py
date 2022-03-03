@@ -27,6 +27,10 @@ parser.add_argument('infile', help="Input file in Excel format")
 
 args = parser.parse_args()
 
+# These are offsets to the status column
+args.content_type_col = args.status_col + 1
+args.location_col = args.content_type_col + 1
+
 # keep an error count
 errors = 0
 # keep a redirect count
