@@ -78,18 +78,18 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         except KeyError:
             continue
 
-          if req.history:
-            redirects += 1
+        if args.track_redirects != 0:
             # check for redirect and follow if so
-            if args.track_redirects != 0:
+            if req.history:
+                redirects += 1
                 try:
                     the_cell = sheet.cell(row=index + offset,
                                           column=args.location_col)
                     fld = ''
                     for rh in req.history:
                         fld += rh.url + ';'
-                    fld += req.url
-                    the_cell.value = fld
+                        fld += req.url
+                        the_cell.value = fld
                 except KeyError:
                     continue
 
