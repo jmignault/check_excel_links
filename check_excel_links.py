@@ -78,7 +78,7 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         except KeyError:
             continue
 
-        if req.history:
+          if req.history:
             redirects += 1
             # check for redirect and follow if so
             if args.track_redirects != 0:
@@ -88,9 +88,7 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
                     fld = ''
                     for rh in req.history:
                         fld += rh.url + ';'
-                    rq = requests.get(
-                        req.history[-1].url, allow_redirects=True)
-                    fld += f"{rq.status_code}"
+                    fld += req.url
                     the_cell.value = fld
                 except KeyError:
                     continue
