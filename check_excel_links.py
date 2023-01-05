@@ -21,7 +21,7 @@ parser.add_argument('--ccol', dest='content_type_col', default=6, type=int,
                     help='index of column in output file to write content type (zero-based)')
 parser.add_argument('--lcol', dest='location_col', default=7, type=int,
                     help='index of column in output file to write redirect location (zero-based)')
-parser.add_argument('--redir', dest='track_redirects', default=0, type=int,
+parser.add_argument('--redir', dest='track_redirects', default=1, type=int,
                     help='write redirection chain to output file')
 parser.add_argument('infile', help="Input file in Excel format")
 
@@ -99,6 +99,14 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
         the_cell.value = "No valid URL."
         if index > 0:
             print(f"No valid URL for line {index}.")
+            errors += 1
+        continue
+   # record if there's no URL, then continue
+    except requests.exceptions.InvalidSchema:
+        the_cell = sheet.cell(row=index + offset, column=args.status_col)
+        the_cell.value = "No valid schema."
+        if index > 0:
+            print(f"No valid schema for line {index}.")
             errors += 1
         continue
     except requests.exceptions.ConnectionError:
