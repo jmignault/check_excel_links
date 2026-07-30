@@ -116,6 +116,13 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
             print(f"The connection was refused to {cv}: line {index}.")
             errors += 1
         continue
+    except requests.exceptions.TooManyRedirects:
+        the_cell = sheet.cell(row=index + offset, column=args.status_col)
+        the_cell.value = "Too many redirects."
+        if index > 0:
+            print(f"Too many redirects for {cv}: line {index}.")
+            errors += 1
+        continue
 
 try:
     # try to save the output file
