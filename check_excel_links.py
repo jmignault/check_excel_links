@@ -21,6 +21,8 @@ parser.add_argument('--ccol', dest='content_type_col', default=6, type=int,
                     help='index of column in output file to write content type (zero-based)')
 parser.add_argument('--lcol', dest='location_col', default=7, type=int,
                     help='index of column in output file to write redirect location (zero-based)')
+parser.add_argument('--dcol', dest='dest_col', default=8, type=int,
+                    help='index of column in output file to write redirect final destination (zero-based)')
 parser.add_argument('--redir', dest='track_redirects', default=1, type=int,
                     help='write redirection chain to output file')
 parser.add_argument('infile', help="Input file in Excel format")
@@ -51,6 +53,7 @@ print(f"Will save records to XSLX file {outfile}.")
 sheet.cell(row=1, column=args.status_col).value = 'STATUS CODE'
 sheet.cell(row=1, column=args.content_type_col).value = 'CONTENT TYPE'
 sheet.cell(row=1, column=args.location_col).value = 'LOCATION'
+sheet.cell(row=1, column=args.dest_col).value = 'FINAL REDIRECT'
 
 # calculate padding for processed rows
 padding = len(str(sheet.max_row))
@@ -84,9 +87,13 @@ for index, row in enumerate(sheet.iter_rows(min_row=offset)):
                 redirects += 1
                 try:
                     the_cell = sheet.cell(row=index + offset,
+                                          column=args.dest_col)
+                    the_cell.value = req.history[-1].url
+
+                    the_cell = sheet.cell(row=index + offset,
                                           column=args.location_col)
                     fld = ''
-                    for rh in req.history:
+                    for rh in req.history[:-1]:
                         fld += rh.url + ';'
                         fld += req.url
                         the_cell.value = fld
